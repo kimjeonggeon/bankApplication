@@ -20,6 +20,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /*import shop.mtcoding.bank.config.jwt.JwtAuthenticationFilter;
 import shop.mtcoding.bank.config.jwt.JwtAuthorizationFilter;*/
+import shop.mtcoding.bank.config.jwt.JwtAuthenticationFilter;
+import shop.mtcoding.bank.config.jwt.JwtAuthorizationFilter;
 import shop.mtcoding.bank.domain.user.UserEnum;
 import shop.mtcoding.bank.dto.ResponseDto;
 import shop.mtcoding.bank.util.CustomResponseUtil;
@@ -37,7 +39,7 @@ public class SecurityConfig  {
     }
 
     // JWT 필터 등록이 필요함
-   /* public class CustomSecurityFilterManager extends AbstractHttpConfigurer<CustomSecurityFilterManager, HttpSecurity> {
+   public class CustomSecurityFilterManager extends AbstractHttpConfigurer<CustomSecurityFilterManager, HttpSecurity> {
         @Override
         public void configure(HttpSecurity builder) throws Exception {
             AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
@@ -46,7 +48,7 @@ public class SecurityConfig  {
             super.configure(builder);
         }
     }
-*/
+
     // JWT 서버를 만들 예정!! Session 사용안함.
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -61,23 +63,17 @@ public class SecurityConfig  {
         http.formLogin().disable();
         // httpBasic은 브라우저가 팝업창을 이용해서 사용자 인증을 진행한다.
         http.httpBasic().disable();
+        // 필터 적용
+        http.apply(new CustomSecurityFilterManager());
 
         http.exceptionHandling().authenticationEntryPoint((request, response, authException) -> {
-            CustomResponseUtil.unAuthenticaton(response,"로그인을 진행해주세요");
+            CustomResponseUtil.fail(response,"로그인을 진행해주세요",HttpStatus.UNAUTHORIZED);
         });
-        /*// 필터 적용
-        http.apply(new CustomSecurityFilterManager());
-*/
-
-        /*http.exceptionHandling().authenticationEntryPoint((request, response, authException) -> {
-            CustomResponseUtil.fail(response, "로그인을 진행해 주세요", HttpStatus.UNAUTHORIZED);
-        });*/
-
         // 권한 실패
-        /*http.exceptionHandling().accessDeniedHandler((request, response, e) -> {
+        http.exceptionHandling().accessDeniedHandler((request, response, e) -> {
             CustomResponseUtil.fail(response, "권한이 없습니다", HttpStatus.FORBIDDEN);
         });
-*/
+
         // https://docs.spring.io/spring-security/reference/servlet/authorization/authorize-http-requests.html
         http.authorizeRequests()
                 .antMatchers("/api/s/**").authenticated()
