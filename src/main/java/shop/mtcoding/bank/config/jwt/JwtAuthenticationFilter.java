@@ -55,22 +55,23 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             //security config에서 authenicationentrypoint로 보낸다.
       }
     }
+    // 로그인 실패
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.debug("디버그 : successful 호출됨");
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException, ServletException {
+        CustomResponseUtil.fail(response, "로그인실패", HttpStatus.UNAUTHORIZED);
+    }
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+                                            Authentication authResult) throws IOException, ServletException {
+        log.debug("디버그 : successfulAuthentication 호출됨");
         LoginUser loginUser = (LoginUser) authResult.getPrincipal();
         String jwtToken = JwtProcess.create(loginUser);
         response.addHeader(JwtVo.HEADER, jwtToken);
-        LoginRespDto loginRespDto = new UserRespDto.LoginRespDto(loginUser.getUser());
-        log.debug("디버그 : successful 호출"+loginRespDto);
-        CustomResponseUtil.success(response,loginRespDto);
+
+        LoginRespDto loginRespDto = new LoginRespDto(loginUser.getUser());
+        CustomResponseUtil.success(response, loginRespDto);
     }
-//로그인 실패
-        @Override
-        protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                                  AuthenticationException failed) throws IOException, ServletException {
-            CustomResponseUtil.fail(response, "로그인실패", HttpStatus.UNAUTHORIZED);
-        }
 
     //return authentification 잘작동시 아래 메서드 호출
 
