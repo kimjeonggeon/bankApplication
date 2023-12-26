@@ -1,5 +1,6 @@
 package shop.mtcoding.bank.domain.account;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -37,7 +38,19 @@ public class Account {
     private LocalDateTime createdAt;
     @LastModifiedDate
     @Column(nullable = false)
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
+
+    @Builder
+    public Account(Long id, Long number, Long password, Long balance, User user, LocalDateTime createdAt,
+                   LocalDateTime updatedAt) {
+        this.id = id;
+        this.number = number;
+        this.password = password;
+        this.balance = balance;
+        this.user = user;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
 
 
