@@ -6,7 +6,7 @@ public interface JwtVo {
 
     public static final String SECRET = "메타코딩";//hs256 대칭키 사용
     public static final int EXPIRATION_TIME = 1000* 60 * 60 * 24 * 7 ; //일주일
-    public static  final String TOKEN_PREFIX ="Bearer";
+    public static  final String TOKEN_PREFIX ="Bearer ";
     //프로토콜로 앞에 붙임
     public static final String HEADER = "Authorization";
 }

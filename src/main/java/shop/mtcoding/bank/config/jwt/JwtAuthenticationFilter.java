@@ -32,35 +32,39 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         this.authenticationManager = authenticationManager;
     }
 
-    //post : /login 일때 동작
+    // Post : /api/login
     @Override
-    public Authentication attemptAuthentication (HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException{
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
         log.debug("디버그 : attemptAuthentication 호출됨");
-      try{
-          ObjectMapper om = new ObjectMapper();
-          LoginReqDto loginReqDto = om.readValue(request.getInputStream(), LoginReqDto.class);
-          //강제 로그인
-          //jwt를 쓴다해도 컨트롤러의 진입을 하면 시큐리티의 권한체크 인증체크의 도움을 받을수있게 세션읆 나든다.
-          //이 세션의 유효기간은 request하고 response 하면 끝
-          log.debug("Received JSON data: {}", loginReqDto);
-          UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginReqDto.getUsername(), loginReqDto.getPassword());
+        try {
+            ObjectMapper om = new ObjectMapper();
+            LoginReqDto loginReqDto = om.readValue(request.getInputStream(), LoginReqDto.class);
 
-          //userdetailservice의 loadbyusername 호출
-          Authentication authentication = authenticationManager.authenticate(authenticationToken);
-          return authentication;
-      } catch (Exception e){
-         e.printStackTrace();
-           throw new InternalAuthenticationServiceException(e.getMessage());
-            //security config에서 authenicationentrypoint로 보낸다.
-      }
+            // 강제 로그인
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    loginReqDto.getUsername(), loginReqDto.getPassword());
+
+            // UserDetailsService의 loadUserByUsername 호출
+            // JWT를 쓴다 하더라도, 컨트롤러 진입을 하면 시큐리티의 권한체크, 인증체크의 도움을 받을 수 있게 세션을 만든다.
+            // 이 세션의 유효기간은 request하고, response하면 끝!!
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+
+            return authentication;
+        } catch (Exception e) {
+            // unsuccessfulAuthentication 호출함
+            throw new InternalAuthenticationServiceException(e.getMessage());
+        }
     }
+
     // 로그인 실패
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                               AuthenticationException failed) throws IOException, ServletException {
         CustomResponseUtil.fail(response, "로그인실패", HttpStatus.UNAUTHORIZED);
     }
+
+    // return authentication 잘 작동하면 successfulAuthentication 메서드 호출됩니다.
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
@@ -72,7 +76,5 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         LoginRespDto loginRespDto = new LoginRespDto(loginUser.getUser());
         CustomResponseUtil.success(response, loginRespDto);
     }
-
-    //return authentification 잘작동시 아래 메서드 호출
 
 }
